@@ -33,14 +33,28 @@ $("#postinbtn").click(async function () {
   let password = $("#password").val();
   let content = $("#content").val();
 
-  let doc = {
-    email: email,
-    password: password,
-    content: content,
-  };
-  await addDoc(collection(db, "rememberme"), doc);
-  alert("저장 완료");
-  window.location.reload();
+  //정규식 이메일 
+  let emailRegex = /^[a-zA-Z0-9ㄱ-ㅎ가-힣!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{1,14}$/;
+
+  if (email && password && content) {
+    // 정규식 이메일 확인 
+    if (!emailRegex.test(email)) {
+      alert("아이디는 14문자이내로 작성해주세요.");
+      window.location.reload();
+    }
+
+    let doc = {
+      email: email,
+      password: password,
+      content: content,
+    };
+    await addDoc(collection(db, "rememberme"), doc);
+    alert("저장 완료");
+    window.location.reload();
+  } else {
+    alert("ZEP 아이디, 비밀번호, 방명록 작성해주세요")
+    window.location.reload();
+  }
 });
 
 // 방명록 목록 불러오기
