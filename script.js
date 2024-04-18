@@ -11,7 +11,7 @@ import {
   getDoc,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// 고정훈 파이어베이스 정보
+// // 고정훈 파이어베이스 정보
 // const firebaseConfig = {
 // apiKey: "AIzaSyA5VGUfa7TZ1i5TmLvTLwVLIgZLKLUppyY",
 //   authDomain: "remember-me-3b62b.firebaseapp.com",
@@ -22,9 +22,9 @@ import {
 //   measurementId: "G-2LT67NQRMD"
 // };
 
-// // Firebase 구성 정보 설정
+// Firebase 구성 정보 설정
 const firebaseConfig = {
-//   //개인 파이어베이스 설정정보 심규아로 수정
+  //개인 파이어베이스 설정정보 심규아로 수정
   apiKey: "AIzaSyCNlqEQIGm9ofoSst6SRhgOYB1j_2XhP2o",
   authDomain: "rememberme-d05ca.firebaseapp.com",
   projectId: "rememberme-d05ca",
@@ -37,6 +37,12 @@ const firebaseConfig = {
 // Firebase 인스턴스 초기화
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// 비밀번호 입력란 초기화 함수 정의
+  function resetPasswordInput() {
+    $("#passwordInput").val("");
+    console.log("비밀번호 입력란 초기화");
+  }
 
 // 방명록 저장 버튼 클릭 이벤트
 $("#postinbtn").click(async function () {
@@ -81,7 +87,7 @@ async function loadDocs() {
                             <h5 class="card-title">작성자 : ${email}</h5>
                             <p class="card-text">내용 : ${content}</p>
                             <button class="delete-btn btn btn-danger" data-doc-id="${docId}">삭제</button> <!-- 삭제 버튼 추가 -->
-                            <button class="edit-btn btn btn-warning" data-doc-id="${docId}" data-bs-toggle="modal" data-bs-target="#editModal">수정</button> <!-- 수정 버튼 추가 -->
+                            <button class="edit-btn btn btn-warning" data-doc-id="${docId}">수정</button> <!-- 수정 버튼 추가 -->
                         </div>`;
     $(".postingcard").append(temp_html);
   });
@@ -90,7 +96,8 @@ async function loadDocs() {
   $(".delete-btn").click(function () {
     // 클릭된 삭제 버튼의 문서 ID 가져오기
     const docId = $(this).data("doc-id");
-
+    // 비밀번호 입력란 초기화
+    resetPasswordInput();
     // 비밀번호 입력 모달 보이기
     $("#passwordModal").modal("show");
 
@@ -129,11 +136,7 @@ async function loadDocs() {
       });
   });
 
-  // 비밀번호 입력란 초기화 함수 정의
-  function resetPasswordInput() {
-    $("#passwordInput").val("");
-    console.log("비밀번호 입력란 초기화");
-  }
+  
 
   // 수정 버튼 클릭 이벤트 (동적 추가)
   $(".edit-btn").click(async function () {
@@ -147,34 +150,6 @@ async function loadDocs() {
 
       // 비밀번호 입력 모달 보이기
       $("#passwordModal").modal("show");
-
-      // 수정 모달 닫기 함수 정의
-      function closeEditModal() {
-        // 수정 모달이 열려있는 경우에만 닫기
-        if ($("#editModal").hasClass("show")) {
-          $("#editModal").modal("hide");
-        }
-      }
-
-      // 비밀번호 모달이 열릴 때 발생하는 이벤트
-      $("#passwordModal").on("shown.bs.modal", function () {
-        // 수정 모달이 열려있을 때만 이벤트 등록
-        if ($("#editModal").hasClass("show")) {
-          // 비밀번호 모달 바깥의 영역을 클릭했을 때 수정 모달 닫기
-          $(document).on("click", function (event) {
-            if (!$(event.target).closest('#editModal').length && !$(event.target).is('#editModal') && !$(event.target).is('#passwordInput')) {
-              closeEditModal();
-              console.log("외부클릭")
-            }
-          });
-          // 취소 버튼 클릭 이벤트 (비밀번호 모달 닫을 때 수정 모달도 닫기)
-          $("#cancelPasswordBtn").off().click(function () {
-            // 수정 모달 닫기
-            $("#editModal").modal("hide");
-            console.log("취소버튼");
-          });
-        }
-      });
 
       // 확인 버튼 클릭 이벤트
       $("#confirmPasswordBtn").off().click(async function () {
@@ -193,8 +168,7 @@ async function loadDocs() {
           // 비밀번호 입력 모달 닫기
           $("#passwordModal").modal("hide");
           // 수정 버튼 활성화
-          $("#editModal").modal("show");
-          $(".edit-btn").prop("disabled", false);
+          $("#editModal").modal("show");          
           // 수정 완료 버튼 클릭 이벤트
           $("#confirmEditBtn").off().click(async function () {
             // 수정된 내용 가져오기
