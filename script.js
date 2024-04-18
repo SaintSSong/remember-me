@@ -104,74 +104,100 @@ async function loadDocs() {
       });
   });
 
+  // 비밀번호 입력란 초기화 함수 정의
+  function resetPasswordInput() {
+    $("#passwordInput").val("");
+    console.log("비밀번호 입력란 초기화");
+  }
+
   // 수정 버튼 클릭 이벤트 (동적 추가)
   $(".edit-btn").click(async function () {
     // 클릭된 수정 버튼의 문서 ID 가져오기
     const docId = $(this).data("doc-id");
-
+    // 비밀번호 입력란 초기화
+    resetPasswordInput(); // 비밀번호 입력란 초기화
     try {
+      // 내용 입력 부분의 높이를 한 줄 크기로 설정
+      $("#editContent").css("height", "1.5px");
+
       // 비밀번호 입력 모달 보이기
       $("#passwordModal").modal("show");
 
+      // 수정 모달 닫기 함수 정의
+      function closeEditModal() {
+        // 수정 모달이 열려있는 경우에만 닫기
+        if ($("#editModal").hasClass("show")) {
+          $("#editModal").modal("hide");
+        }
+      }
+
+      // 비밀번호 모달이 열릴 때 발생하는 이벤트
+      $("#passwordModal").on("shown.bs.modal", function () {
+        // 수정 모달이 열려있을 때만 이벤트 등록
+        if ($("#editModal").hasClass("show")) {
+          // 비밀번호 모달 바깥의 영역을 클릭했을 때 수정 모달 닫기
+          $(document).on("click", function (event) {
+            if (!$(event.target).closest('#editModal').length && !$(event.target).is('#editModal')) {
+              closeEditModal();
+              console.log("외부클릭")
+            }
+          });
+          // 취소 버튼 클릭 이벤트 (비밀번호 모달 닫을 때 수정 모달도 닫기)
+          $("#cancelPasswordBtn").off().click(function () {
+            // 수정 모달 닫기
+            $("#editModal").modal("hide");
+            console.log("취소버튼");
+          });
+        }
+      });
+
       // 확인 버튼 클릭 이벤트
-      $("#confirmPasswordBtn")
-        .off()
-        .click(async function () {
-          // 입력된 비밀번호 가져오기
-          const password = $("#passwordInput").val();
+      $("#confirmPasswordBtn").off().click(async function () {
+        // 입력된 비밀번호 가져오기
+        const password = $("#passwordInput").val();
 
-          try {
-            // 해당 문서의 데이터 가져오기
-            const docSnapshot = await getDoc(doc(db, "rememberme", docId));
-            const data = docSnapshot.data();
-
-            // 입력된 비밀번호와 문서의 비밀번호 확인
-            if (password !== data.password) {
-              alert("비밀번호가 일치하지 않습니다.");
+        try {
+          // 해당 문서의 데이터 가져오기
+          const docSnapshot = await getDoc(doc(db, "rememberme", docId));
+          const data = docSnapshot.data();
+          // 입력된 비밀번호와 문서의 비밀번호 확인
+          if (password !== data.password) {
+            alert("비밀번호가 일치하지 않습니다.");
+            return;
+          }
+          // 비밀번호 입력 모달 닫기
+          $("#passwordModal").modal("hide");
+          // 수정 버튼 활성화
+          $("#editModal").modal("show");
+          $(".edit-btn").prop("disabled", false);
+          // 수정 완료 버튼 클릭 이벤트
+          $("#confirmEditBtn").off().click(async function () {
+            // 수정된 내용 가져오기
+            const editedContent = $("#editContent").val();
+            // 내용이 비어있는지 확인
+            if (!editedContent.trim()) {
+              alert("내용을 입력해주세요.");
               return;
             }
 
-            // 비밀번호 입력 모달 닫기
-            $("#passwordModal").modal("hide");
-
-            // 수정 모달 보이기
-            $("#editModal").modal("show");
-
-            // 수정 완료 버튼 클릭 이벤트
-            $("#confirmEditBtn")
-              .off()
-              .click(async function () {
-                // 수정된 내용 가져오기
-                const editedContent = $("#editContent").val();
-
-                // 내용이 비어있는지 확인
-                if (!editedContent.trim()) {
-                  alert("내용을 입력해주세요.");
-                  return;
-                }
-
-                try {
-                  // 해당 문서 업데이트
-                  await updateDoc(doc(db, "rememberme", docId), {
-                    content: editedContent,
-                  });
-
-                  // 화면 업데이트
-                  $(`.card-entry[data-doc-id="${docId}"] .card-text`).text(
-                    `내용 : ${editedContent}`
-                  );
-
-                  // 수정 모달 닫기
-                  $("#editModal").modal("hide");
-                  alert("수정 완료");
-                } catch (error) {
-                  console.error("수정 오류", error);
-                }
+            try {
+              // 해당 문서 업데이트
+              await updateDoc(doc(db, "rememberme", docId), {
+                content: editedContent,
               });
-          } catch (error) {
-            console.error("비밀번호 확인 오류", error);
-          }
-        });
+              // 화면 업데이트
+              $(`.card-entry[data-doc-id="${docId}"] .card-text`).text(`내용 : ${editedContent}`);
+              // 수정 모달 닫기
+              $("#editModal").modal("hide");
+              alert("수정 완료");
+            } catch (error) {
+              console.error("수정 오류", error);
+            }
+          });
+        } catch (error) {
+          console.error("비밀번호 확인 오류", error);
+        }
+      });
     } catch (error) {
       console.error("수정 오류", error);
     }
