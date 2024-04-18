@@ -9,30 +9,32 @@ import {
   deleteDoc,
   updateDoc,
   getDoc,
+  orderBy,
+  query,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// 고정훈 파이어베이스 정보
-const firebaseConfig = {
-  apiKey: "AIzaSyA5VGUfa7TZ1i5TmLvTLwVLIgZLKLUppyY",
-  authDomain: "remember-me-3b62b.firebaseapp.com",
-  projectId: "remember-me-3b62b",
-  storageBucket: "remember-me-3b62b.appspot.com",
-  messagingSenderId: "83160005134",
-  appId: "1:83160005134:web:226babc85b41b1e0ccda5f",
-  measurementId: "G-2LT67NQRMD"
-};
-
-// // Firebase 구성 정보 설정
+// // 고정훈 파이어베이스 정보
 // const firebaseConfig = {
-//   //개인 파이어베이스 설정정보 심규아로 수정
-//   apiKey: "AIzaSyCNlqEQIGm9ofoSst6SRhgOYB1j_2XhP2o",
-//   authDomain: "rememberme-d05ca.firebaseapp.com",
-//   projectId: "rememberme-d05ca",
-//   storageBucket: "rememberme-d05ca.appspot.com",
-//   messagingSenderId: "344171655552",
-//   appId: "1:344171655552:web:ea7aeaaf8fef2b9c9e9165",
-//   measurementId: "G-P3TZ5EQVKJ",
+// apiKey: "AIzaSyA5VGUfa7TZ1i5TmLvTLwVLIgZLKLUppyY",
+//   authDomain: "remember-me-3b62b.firebaseapp.com",
+//   projectId: "remember-me-3b62b",
+//   storageBucket: "remember-me-3b62b.appspot.com",
+//   messagingSenderId: "83160005134",
+//   appId: "1:83160005134:web:226babc85b41b1e0ccda5f",
+//   measurementId: "G-2LT67NQRMD"
 // };
+
+// Firebase 구성 정보 설정
+const firebaseConfig = {
+//개인 파이어베이스 설정정보 심규아로 수정
+   apiKey: "AIzaSyCNlqEQIGm9ofoSst6SRhgOYB1j_2XhP2o",
+   authDomain: "rememberme-d05ca.firebaseapp.com",
+   projectId: "rememberme-d05ca",
+   storageBucket: "rememberme-d05ca.appspot.com",
+   messagingSenderId: "344171655552",
+   appId: "1:344171655552:web:ea7aeaaf8fef2b9c9e9165",
+   measurementId: "G-P3TZ5EQVKJ",
+};
 
 // Firebase 인스턴스 초기화
 const app = initializeApp(firebaseConfig);
@@ -69,6 +71,7 @@ $("#postinbtn").click(async function () {
       email: email,
       password: password,
       content: content,
+      timestamp: new Date(), // 데이터 저장 시간 추가
     };
     await addDoc(collection(db, "rememberme"), doc);
     alert("저장 완료");
@@ -81,7 +84,9 @@ $("#postinbtn").click(async function () {
 
 // 방명록 목록 불러오기
 async function loadDocs() {
-  let docs = await getDocs(collection(db, "rememberme"));
+  let docs = await getDocs(
+    query(collection(db, "rememberme"), orderBy("timestamp", "desc"))
+  ); // 데이터 저장 시간 기준으로 내림차순
   docs.forEach((doc) => {
     let row = doc.data();
     let email = row.email;
@@ -141,8 +146,6 @@ async function loadDocs() {
       });
   });
 
-
-
   // 수정 버튼 클릭 이벤트 (동적 추가)
   $(".edit-btn").click(async function () {
     // 클릭된 수정 버튼의 문서 ID 가져오기
@@ -157,6 +160,7 @@ async function loadDocs() {
       $("#passwordModal").modal("show");
 
       // 확인 버튼 클릭 이벤트
+
       $("#confirmPasswordBtn").off().click(async function () {
         // 입력된 비밀번호 가져오기
         const password = $("#passwordInput").val();
