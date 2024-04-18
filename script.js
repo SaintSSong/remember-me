@@ -9,7 +9,20 @@ import {
   deleteDoc,
   updateDoc,
   getDoc,
+  orderBy,
+  query,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+// // 고정훈 파이어베이스 정보
+// const firebaseConfig = {
+// apiKey: "AIzaSyA5VGUfa7TZ1i5TmLvTLwVLIgZLKLUppyY",
+//   authDomain: "remember-me-3b62b.firebaseapp.com",
+//   projectId: "remember-me-3b62b",
+//   storageBucket: "remember-me-3b62b.appspot.com",
+//   messagingSenderId: "83160005134",
+//   appId: "1:83160005134:web:226babc85b41b1e0ccda5f",
+//   measurementId: "G-2LT67NQRMD"
+// };
 
 // Firebase 구성 정보 설정
 const firebaseConfig = {
@@ -27,25 +40,49 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// 비밀번호 입력란 초기화 함수 정의
+function resetPasswordInput() {
+  $("#passwordInput").val("");
+  console.log("비밀번호 입력란 초기화");
+}
+
 // 방명록 저장 버튼 클릭 이벤트
 $("#postinbtn").click(async function () {
   let email = $("#email").val();
   let password = $("#password").val();
   let content = $("#content").val();
 
-  let doc = {
-    email: email,
-    password: password,
-    content: content,
-  };
-  await addDoc(collection(db, "rememberme"), doc);
-  alert("저장 완료");
-  window.location.reload();
+  //정규식 이메일
+  let emailRegex =
+    /^[a-zA-Z0-9ㄱ-ㅎ가-힣!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{1,14}$/;
+
+  if (email && password && content) {
+    // 정규식 이메일 확인
+    if (!emailRegex.test(email)) {
+      alert("아이디는 14문자이내로 작성해주세요.");
+      window.location.reload();
+    }
+
+    let doc = {
+      email: email,
+      password: password,
+      content: content,
+      timestamp: new Date(), // 데이터 저장 시간 추가
+    };
+    await addDoc(collection(db, "rememberme"), doc);
+    alert("저장 완료");
+    window.location.reload();
+  } else {
+    alert("ZEP 아이디, 비밀번호, 방명록 작성해주세요");
+    window.location.reload();
+  }
 });
 
 // 방명록 목록 불러오기
 async function loadDocs() {
-  let docs = await getDocs(collection(db, "rememberme"));
+  let docs = await getDocs(
+    query(collection(db, "rememberme"), orderBy("timestamp", "desc"))
+  ); // 데이터 저장 시간 기준으로 내림차순
   docs.forEach((doc) => {
     let row = doc.data();
     let email = row.email;
@@ -56,7 +93,7 @@ async function loadDocs() {
                             <h5 class="card-title">작성자 : ${email}</h5>
                             <p class="card-text">내용 : ${content}</p>
                             <button class="delete-btn btn btn-danger" data-doc-id="${docId}">삭제</button> <!-- 삭제 버튼 추가 -->
-                            <button class="edit-btn btn btn-warning" data-doc-id="${docId}" data-bs-toggle="modal" data-bs-target="#editModal">수정</button> <!-- 수정 버튼 추가 -->
+                            <button class="edit-btn btn btn-warning" data-doc-id="${docId}">수정</button> <!-- 수정 버튼 추가 -->
                         </div>`;
     $(".postingcard").append(temp_html);
   });
@@ -65,7 +102,8 @@ async function loadDocs() {
   $(".delete-btn").click(function () {
     // 클릭된 삭제 버튼의 문서 ID 가져오기
     const docId = $(this).data("doc-id");
-
+    // 비밀번호 입력란 초기화
+    resetPasswordInput();
     // 비밀번호 입력 모달 보이기
     $("#passwordModal").modal("show");
 
@@ -108,8 +146,12 @@ async function loadDocs() {
   $(".edit-btn").click(async function () {
     // 클릭된 수정 버튼의 문서 ID 가져오기
     const docId = $(this).data("doc-id");
-
+    // 비밀번호 입력란 초기화
+    resetPasswordInput();
     try {
+      // 내용 입력 부분의 높이를 한 줄 크기로 설정
+      $("#editContent").css("height", "1.5px");
+
       // 비밀번호 입력 모달 보이기
       $("#passwordModal").modal("show");
 
@@ -124,26 +166,21 @@ async function loadDocs() {
             // 해당 문서의 데이터 가져오기
             const docSnapshot = await getDoc(doc(db, "rememberme", docId));
             const data = docSnapshot.data();
-
             // 입력된 비밀번호와 문서의 비밀번호 확인
             if (password !== data.password) {
               alert("비밀번호가 일치하지 않습니다.");
               return;
             }
-
             // 비밀번호 입력 모달 닫기
             $("#passwordModal").modal("hide");
-
-            // 수정 모달 보이기
+            // 수정 버튼 활성화
             $("#editModal").modal("show");
-
             // 수정 완료 버튼 클릭 이벤트
             $("#confirmEditBtn")
               .off()
               .click(async function () {
                 // 수정된 내용 가져오기
                 const editedContent = $("#editContent").val();
-
                 // 내용이 비어있는지 확인
                 if (!editedContent.trim()) {
                   alert("내용을 입력해주세요.");
@@ -155,12 +192,10 @@ async function loadDocs() {
                   await updateDoc(doc(db, "rememberme", docId), {
                     content: editedContent,
                   });
-
                   // 화면 업데이트
                   $(`.card-entry[data-doc-id="${docId}"] .card-text`).text(
                     `내용 : ${editedContent}`
                   );
-
                   // 수정 모달 닫기
                   $("#editModal").modal("hide");
                   alert("수정 완료");
