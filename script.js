@@ -11,38 +11,43 @@ import {
   getDoc,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// // 고정훈 파이어베이스 정보
-// const firebaseConfig = {
-// apiKey: "AIzaSyA5VGUfa7TZ1i5TmLvTLwVLIgZLKLUppyY",
-//   authDomain: "remember-me-3b62b.firebaseapp.com",
-//   projectId: "remember-me-3b62b",
-//   storageBucket: "remember-me-3b62b.appspot.com",
-//   messagingSenderId: "83160005134",
-//   appId: "1:83160005134:web:226babc85b41b1e0ccda5f",
-//   measurementId: "G-2LT67NQRMD"
-// };
-
-// Firebase 구성 정보 설정
+// 고정훈 파이어베이스 정보
 const firebaseConfig = {
-  //개인 파이어베이스 설정정보 심규아로 수정
-  apiKey: "AIzaSyCNlqEQIGm9ofoSst6SRhgOYB1j_2XhP2o",
-  authDomain: "rememberme-d05ca.firebaseapp.com",
-  projectId: "rememberme-d05ca",
-  storageBucket: "rememberme-d05ca.appspot.com",
-  messagingSenderId: "344171655552",
-  appId: "1:344171655552:web:ea7aeaaf8fef2b9c9e9165",
-  measurementId: "G-P3TZ5EQVKJ",
+  apiKey: "AIzaSyA5VGUfa7TZ1i5TmLvTLwVLIgZLKLUppyY",
+  authDomain: "remember-me-3b62b.firebaseapp.com",
+  projectId: "remember-me-3b62b",
+  storageBucket: "remember-me-3b62b.appspot.com",
+  messagingSenderId: "83160005134",
+  appId: "1:83160005134:web:226babc85b41b1e0ccda5f",
+  measurementId: "G-2LT67NQRMD"
 };
+
+// // Firebase 구성 정보 설정
+// const firebaseConfig = {
+//   //개인 파이어베이스 설정정보 심규아로 수정
+//   apiKey: "AIzaSyCNlqEQIGm9ofoSst6SRhgOYB1j_2XhP2o",
+//   authDomain: "rememberme-d05ca.firebaseapp.com",
+//   projectId: "rememberme-d05ca",
+//   storageBucket: "rememberme-d05ca.appspot.com",
+//   messagingSenderId: "344171655552",
+//   appId: "1:344171655552:web:ea7aeaaf8fef2b9c9e9165",
+//   measurementId: "G-P3TZ5EQVKJ",
+// };
 
 // Firebase 인스턴스 초기화
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // 비밀번호 입력란 초기화 함수 정의
-  function resetPasswordInput() {
-    $("#passwordInput").val("");
-    console.log("비밀번호 입력란 초기화");
-  }
+function resetPasswordInput() {
+  $("#passwordInput").val("");
+  console.log("수정확인용:페이지 새로고침");
+}
+
+// 페이지를 새로고침하는 함수
+function refreshPage() {
+  location.reload();
+}
 
 // 방명록 저장 버튼 클릭 이벤트
 $("#postinbtn").click(async function () {
@@ -136,7 +141,7 @@ async function loadDocs() {
       });
   });
 
-  
+
 
   // 수정 버튼 클릭 이벤트 (동적 추가)
   $(".edit-btn").click(async function () {
@@ -168,7 +173,7 @@ async function loadDocs() {
           // 비밀번호 입력 모달 닫기
           $("#passwordModal").modal("hide");
           // 수정 버튼 활성화
-          $("#editModal").modal("show");          
+          $("#editModal").modal("show");
           // 수정 완료 버튼 클릭 이벤트
           $("#confirmEditBtn").off().click(async function () {
             // 수정된 내용 가져오기
@@ -189,6 +194,7 @@ async function loadDocs() {
               // 수정 모달 닫기
               $("#editModal").modal("hide");
               alert("수정 완료");
+              refreshPage();
             } catch (error) {
               console.error("수정 오류", error);
             }
