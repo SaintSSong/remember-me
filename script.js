@@ -26,14 +26,14 @@ import {
 
 // Firebase 구성 정보 설정
 const firebaseConfig = {
-  //개인 파이어베이스 설정정보 심규아로 수정
-  apiKey: "AIzaSyCNlqEQIGm9ofoSst6SRhgOYB1j_2XhP2o",
-  authDomain: "rememberme-d05ca.firebaseapp.com",
-  projectId: "rememberme-d05ca",
-  storageBucket: "rememberme-d05ca.appspot.com",
-  messagingSenderId: "344171655552",
-  appId: "1:344171655552:web:ea7aeaaf8fef2b9c9e9165",
-  measurementId: "G-P3TZ5EQVKJ",
+//개인 파이어베이스 설정정보 심규아로 수정
+   apiKey: "AIzaSyCNlqEQIGm9ofoSst6SRhgOYB1j_2XhP2o",
+   authDomain: "rememberme-d05ca.firebaseapp.com",
+   projectId: "rememberme-d05ca",
+   storageBucket: "rememberme-d05ca.appspot.com",
+   messagingSenderId: "344171655552",
+   appId: "1:344171655552:web:ea7aeaaf8fef2b9c9e9165",
+   measurementId: "G-P3TZ5EQVKJ",
 };
 
 // Firebase 인스턴스 초기화
@@ -43,7 +43,12 @@ const db = getFirestore(app);
 // 비밀번호 입력란 초기화 함수 정의
 function resetPasswordInput() {
   $("#passwordInput").val("");
-  console.log("비밀번호 입력란 초기화");
+  console.log("수정확인용:페이지 새로고침");
+}
+
+// 페이지를 새로고침하는 함수
+function refreshPage() {
+  location.reload();
 }
 
 // 방명록 저장 버튼 클릭 이벤트
@@ -52,12 +57,11 @@ $("#postinbtn").click(async function () {
   let password = $("#password").val();
   let content = $("#content").val();
 
-  //정규식 이메일
-  let emailRegex =
-    /^[a-zA-Z0-9ㄱ-ㅎ가-힣!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{1,14}$/;
+  //정규식 이메일 
+  let emailRegex = /^[a-zA-Z0-9ㄱ-ㅎ가-힣!"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{1,14}$/;
 
   if (email && password && content) {
-    // 정규식 이메일 확인
+    // 정규식 이메일 확인 
     if (!emailRegex.test(email)) {
       alert("아이디는 14문자이내로 작성해주세요.");
       window.location.reload();
@@ -73,7 +77,7 @@ $("#postinbtn").click(async function () {
     alert("저장 완료");
     window.location.reload();
   } else {
-    alert("ZEP 아이디, 비밀번호, 방명록 작성해주세요");
+    alert("ZEP 아이디, 비밀번호, 방명록 작성해주세요")
     window.location.reload();
   }
 });
@@ -156,57 +160,53 @@ async function loadDocs() {
       $("#passwordModal").modal("show");
 
       // 확인 버튼 클릭 이벤트
-      $("#confirmPasswordBtn")
-        .off()
-        .click(async function () {
-          // 입력된 비밀번호 가져오기
-          const password = $("#passwordInput").val();
 
-          try {
-            // 해당 문서의 데이터 가져오기
-            const docSnapshot = await getDoc(doc(db, "rememberme", docId));
-            const data = docSnapshot.data();
-            // 입력된 비밀번호와 문서의 비밀번호 확인
-            if (password !== data.password) {
-              alert("비밀번호가 일치하지 않습니다.");
+      $("#confirmPasswordBtn").off().click(async function () {
+        // 입력된 비밀번호 가져오기
+        const password = $("#passwordInput").val();
+
+        try {
+          // 해당 문서의 데이터 가져오기
+          const docSnapshot = await getDoc(doc(db, "rememberme", docId));
+          const data = docSnapshot.data();
+          // 입력된 비밀번호와 문서의 비밀번호 확인
+          if (password !== data.password) {
+            alert("비밀번호가 일치하지 않습니다.");
+            return;
+          }
+          // 비밀번호 입력 모달 닫기
+          $("#passwordModal").modal("hide");
+          // 수정 버튼 활성화
+          $("#editModal").modal("show");
+          // 수정 완료 버튼 클릭 이벤트
+          $("#confirmEditBtn").off().click(async function () {
+            // 수정된 내용 가져오기
+            const editedContent = $("#editContent").val();
+            // 내용이 비어있는지 확인
+            if (!editedContent.trim()) {
+              alert("내용을 입력해주세요.");
               return;
             }
-            // 비밀번호 입력 모달 닫기
-            $("#passwordModal").modal("hide");
-            // 수정 버튼 활성화
-            $("#editModal").modal("show");
-            // 수정 완료 버튼 클릭 이벤트
-            $("#confirmEditBtn")
-              .off()
-              .click(async function () {
-                // 수정된 내용 가져오기
-                const editedContent = $("#editContent").val();
-                // 내용이 비어있는지 확인
-                if (!editedContent.trim()) {
-                  alert("내용을 입력해주세요.");
-                  return;
-                }
 
-                try {
-                  // 해당 문서 업데이트
-                  await updateDoc(doc(db, "rememberme", docId), {
-                    content: editedContent,
-                  });
-                  // 화면 업데이트
-                  $(`.card-entry[data-doc-id="${docId}"] .card-text`).text(
-                    `내용 : ${editedContent}`
-                  );
-                  // 수정 모달 닫기
-                  $("#editModal").modal("hide");
-                  alert("수정 완료");
-                } catch (error) {
-                  console.error("수정 오류", error);
-                }
+            try {
+              // 해당 문서 업데이트
+              await updateDoc(doc(db, "rememberme", docId), {
+                content: editedContent,
               });
-          } catch (error) {
-            console.error("비밀번호 확인 오류", error);
-          }
-        });
+              // 화면 업데이트
+              $(`.card-entry[data-doc-id="${docId}"] .card-text`).text(`내용 : ${editedContent}`);
+              // 수정 모달 닫기
+              $("#editModal").modal("hide");
+              alert("수정 완료");
+              refreshPage();
+            } catch (error) {
+              console.error("수정 오류", error);
+            }
+          });
+        } catch (error) {
+          console.error("비밀번호 확인 오류", error);
+        }
+      });
     } catch (error) {
       console.error("수정 오류", error);
     }
