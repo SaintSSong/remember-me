@@ -11,9 +11,20 @@ import {
   getDoc,
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// Firebase 구성 정보 설정
+// 고정훈 파이어베이스 정보
+// const firebaseConfig = {
+// apiKey: "AIzaSyA5VGUfa7TZ1i5TmLvTLwVLIgZLKLUppyY",
+//   authDomain: "remember-me-3b62b.firebaseapp.com",
+//   projectId: "remember-me-3b62b",
+//   storageBucket: "remember-me-3b62b.appspot.com",
+//   messagingSenderId: "83160005134",
+//   appId: "1:83160005134:web:226babc85b41b1e0ccda5f",
+//   measurementId: "G-2LT67NQRMD"
+// };
+
+// // Firebase 구성 정보 설정
 const firebaseConfig = {
-  //개인 파이어베이스 설정정보 심규아로 수정
+//   //개인 파이어베이스 설정정보 심규아로 수정
   apiKey: "AIzaSyCNlqEQIGm9ofoSst6SRhgOYB1j_2XhP2o",
   authDomain: "rememberme-d05ca.firebaseapp.com",
   projectId: "rememberme-d05ca",
@@ -129,7 +140,7 @@ async function loadDocs() {
     // 클릭된 수정 버튼의 문서 ID 가져오기
     const docId = $(this).data("doc-id");
     // 비밀번호 입력란 초기화
-    resetPasswordInput(); // 비밀번호 입력란 초기화
+    resetPasswordInput();
     try {
       // 내용 입력 부분의 높이를 한 줄 크기로 설정
       $("#editContent").css("height", "1.5px");
@@ -151,7 +162,7 @@ async function loadDocs() {
         if ($("#editModal").hasClass("show")) {
           // 비밀번호 모달 바깥의 영역을 클릭했을 때 수정 모달 닫기
           $(document).on("click", function (event) {
-            if (!$(event.target).closest('#editModal').length && !$(event.target).is('#editModal')) {
+            if (!$(event.target).closest('#editModal').length && !$(event.target).is('#editModal') && !$(event.target).is('#passwordInput')) {
               closeEditModal();
               console.log("외부클릭")
             }
